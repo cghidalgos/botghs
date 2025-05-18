@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Bot de WhatsApp</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .form-section {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+        textarea {
+            resize: none;
+        }
+        #qr-container {
+            text-align: center;
+            margin: 30px 0 20px 0;
+        }
+        #qr {
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+        #qr-status {
+            font-weight: bold;
+            color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 form-section">
+
+                <!-- Sección QR -->
+                <div id="qr-container">
+                    <div id="qr"></div>
+                    <p id="qr-status"></p>
+                </div>
+
+                <h2 class="mb-4 text-center">📲 Envío Masivo por WhatsApp</h2>
+
+                <% if (success) { %>
+                    <div class="alert alert-success"><%= success %></div>
+                <% } %>
+                <% if (error) { %>
+                    <div class="alert alert-danger"><%= error %></div>
+                <% } %>
+
+                <form action="/enviar" method="POST" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="numeros">Números (uno por línea, sin 57):</label>
+                        <textarea name="numeros" id="numeros" class="form-control" rows="4" placeholder="3111234567&#10;3127654321"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="archivo">O subir archivo CSV/XLSX con columna 'numero':</label>
+                        <input type="file" name="archivo" class="form-control-file" accept=".csv,.xlsx">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="mensaje">Mensaje de bienvenida:</label>
+                        <textarea name="mensaje" id="mensaje" class="form-control" rows="9" required>
+🚀 *¡Llega el BootCampING a la SanBue!* 🎓🔧🧠
+¿Estás listo para una experiencia única que combinará biomédica, electrónica y sistemas en un solo taller práctico?
+                            
+📅 Fecha: 30 de mayo 
+📍 Lugar: SanBue
+💡 Modalidad: 100% práctica
+🎯 Objetivo: ¡Explorar tecnologías de vanguardia mientras aprendes haciendo!
+                            
+Si eres estudiante o entusiasta de estas áreas, este espacio es para ti.
+
+👉 ¡Entonces no lo pienses más y únete!
+📲 ¡Inscríbete ya y vive una jornada llena de innovación y aprendizaje!
+✨ ¡Te esperamos con toda la energía!
+
+🌟 *¿Te interesa ser parte de esta aventura tecnológica y potenciar tus conocimientos?*
+
+                        </textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="contexto">Contexto de tu BOT:</label>
+                        <textarea name="contexto" id="contexto" class="form-control" rows="10" required>
+Si la respuesta es SÍ:
+¡Gracias por tu interés! 🎉
+Te invitamos a que te inscribas a través del siguiente enlace:
+👉 [https://i.pinimg.com/564x/0d/1d/8b/0d1d8bc6bd9255543dc80cdd80cb1c04.jpg] un abracito de parte de GHS
+
+Si la respuesta es NO:
+¡Gracias por tu respuesta!
+Esperamos que en una próxima ocasión podamos contar contigo para seguir fortaleciendo tu formación.
+Sin embargo, te dejamos el enlace por si deseas compartirlo con alguien que pueda estar interesado:
+👉 [https://i.pinimg.com/564x/0d/1d/8b/0d1d8bc6bd9255543dc80cdd80cb1c04.jpg]  un abracito de parte de GHS
+
+
+en embos casos envia otro mensaje despidiendote y ya no respondas mas. 
+
+si pregunta fecha y hora: dile 30 de mayo en la SanBue a las 8:am en el edificio Parque Tecnologico. 
+
+
+                        </textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fallback">Mensaje alternativo (fallback):</label>
+                        <textarea name="fallback" id="fallback" class="form-control" rows="2" required>
+Te invitamos a nuestro evento, para consultar más información aquí: https://midominio.com/ayuda
+                        </textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-success btn-block">🚀 Iniciar Bot</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <script>
+        const socket = io();
+    
+        socket.on('connect', () => {
+            console.log('Conectado a socket.io');  // Verificar conexión
+        });
+    
+        socket.on('qr', function(qr) {
+            console.log('QR recibido:', qr); // Verificar si el QR es recibido
+            const qrDiv = document.getElementById('qr');
+            const qrStatus = document.getElementById('qr-status');
+    
+            // Generar el QR en el cliente usando qrcode.js
+            qrDiv.innerHTML = '';
+            QRCode.toDataURL(qr, { width: 250 }, function (err, url) {
+                if (err) return console.error('Error generando QR:', err);
+                const img = document.createElement('img');
+                img.src = url;
+                img.alt = 'QR Code';
+                qrDiv.appendChild(img);
+            });
+    
+            qrStatus.textContent = 'Escanea este código QR con tu WhatsApp';
+        });
+    
+        socket.on('ready', () => {
+            document.getElementById('qr-status').textContent = '✅ WhatsApp conectado correctamente';
+        });
+    
+        socket.on('auth_failure', () => {
+            document.getElementById('qr-status').textContent = '❌ Fallo de autenticación. Reinicia el bot.';
+        });
+    </script>
+</body>
+</html>

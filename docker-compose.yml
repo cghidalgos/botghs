@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  whatsapp-bot:
+    build: .
+    container_name: whatsapp-bot
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    environment:
+      - OPENAI_API_KEY=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
